@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>rqt_face</name>
+  <version>0.0.0</version>
+  <description>The rqt_face package</description>
+  <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
+  <license>CC-BY-NC-SA</license>
+  <author email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_py</run_depend>
+
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml" />
+  </export>
+</package>
