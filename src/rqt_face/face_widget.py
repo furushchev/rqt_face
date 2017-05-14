@@ -3,9 +3,12 @@
 # Author: Yuki Furuta <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 import math
+import rospy
 from rqt_face.face import Face
 from python_qt_binding import QtGui
-from python_qt_binding.QtGui import (QWidget, QPainter)
+from python_qt_binding.QtGui import QWidget, QPainter
+from std_msgs.msg import ColorRGBA
+from rqt_face.msg import Emotion, Gaze
 
 
 class FaceWidget(QWidget):
@@ -15,6 +18,10 @@ class FaceWidget(QWidget):
         self.face.emotion = (0, 0, 0)
         self.face.look = (self.width() / 2.0, self.height() / 2.0)
         self.setMouseTracking(True)
+
+        self.sub_emotion = rospy.Subscriber("face/emotion", Emotion, self.emotionCallback)
+        self.sub_gaze = rospy.Subscriber("face/gaze", Gaze, self.gazeCallback)
+        self.sub_color = rospy.Subscriber("face/color", ColorRGBA, self.colorCallback)
 
     def pad_from_screen_point(self, x, y):
         threshold = 0.55
@@ -59,6 +66,21 @@ class FaceWidget(QWidget):
 
         return p, a, d
 
+    ###### ROS Handlers
+    def emotionCallback(self, msg):
+        self.face.emotion = (msg.P, msg.A, msg.D)
+        self.update()
+
+    def gazeCallback(self, msg):
+        x = (msg.x + 1.0) * self.width() / 2.0
+        y = (msg.y + 1.0) * self.height() / 2.0
+        self.face.look = (x, y)
+        self.update()
+
+    def colorCallback(self, msg):
+        self.face.color = (int(v*255.0) for v in [msg.r, msg.g, msg.b])
+        self.update()
+
     ###### EVent Handlers
     def paintEvent(self, event, ctx=None):
         if ctx is None:
@@ -76,6 +98,13 @@ class FaceWidget(QWidget):
     def resizeEvent(self, event):
         self.face.size = (event.size().width(), event.size().height())
         self.update()
+
+    def closeEvent(self, event):
+        rospy.logwarn("close event")
+        self.sub_emotion.unregister()
+        self.sub_gaze.unregister()
+        self.sub_color.unregister()
+        super(FaceWidget, self).closeEvent(event)
 
 if __name__ == '__main__':
     pass
