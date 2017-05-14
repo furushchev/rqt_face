@@ -11,23 +11,16 @@ from python_qt_binding.QtGui import (QWidget, QPainter)
 class FaceWidget(QWidget):
     def __init__(self):
         super(FaceWidget, self).__init__()
-        self.face = Face(150, 150)
-        self.face.emotion = (-1, 1, -1)
-        self.face.look = (0, 150)
+        self.face = Face(self.width(), self.height(), False)
+        self.face.emotion = (0, 0, 0)
+        self.face.look = (self.width() / 2.0, self.height() / 2.0)
         self.setMouseTracking(True)
-
-    def paintEvent(self, event, ctx=None):
-        if ctx is None:
-            ctx = QPainter(self)
-        self.face.paint(ctx)
-        ctx.end()
 
     def pad_from_screen_point(self, x, y):
         threshold = 0.55
         gain = 1.1
 
         w, h = self.width(), self.height()
-        w, h = 150, 150  # FIXME
 
         p =   (x - w / 2.0) / (w + 1.0) * 2.0 * gain
         d = - (y - h / 2.0) / (h + 1.0) * 2.0 * gain
@@ -66,11 +59,22 @@ class FaceWidget(QWidget):
 
         return p, a, d
 
+    ###### EVent Handlers
+    def paintEvent(self, event, ctx=None):
+        if ctx is None:
+            ctx = QPainter(self)
+        self.face.paint(ctx)
+        ctx.end()
+
     def mouseMoveEvent(self, event):
         x, y = event.x(), event.y()
         pad = self.pad_from_screen_point(x, y)
         self.face.emotion = pad
         self.face.look = (x, y)
+        self.update()
+
+    def resizeEvent(self, event):
+        self.face.size = (event.size().width(), event.size().height())
         self.update()
 
 if __name__ == '__main__':
